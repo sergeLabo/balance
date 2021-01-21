@@ -20,7 +20,7 @@ def rendu():
     model = ACKTR.load("/media/data/3D/projets/balance/weights/acktr_blender_250000_1")
 
     obs = env.reset()
-    for _ in range(1000):
+    for _ in range(100000):
         sleep(0.02)
         action, _states = model.predict(obs)
         obs, rewards, dones, info = env.step(action)
