@@ -38,6 +38,13 @@ def main_test():
 
 def main_good():
 
+    # Demande de reset au serveur pour le cas où
+    # blender est lancé après le serveur, ou si blender est relancé
+    if not gl.server_contacted:
+        print("Contact avec le serveur ...")
+        gl.client.send_message(b'/contact', [1])
+        gl.server_contacted = 1
+
     if gl.reset:
         reset()
 

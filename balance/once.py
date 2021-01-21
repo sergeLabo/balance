@@ -96,7 +96,7 @@ def main_good():
     gl.server = None
     gl.send = 0
     gl.client = OSCClient(b'localhost', 3003)
-
+    gl.server_contacted = 0
     osc_server_init()
 
     # Demande de reset

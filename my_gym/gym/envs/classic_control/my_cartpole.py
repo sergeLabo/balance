@@ -60,6 +60,12 @@ class MyCartPoleEnv(gym.Env):
         self.server.listen('localhost', port=3003, default=True)
         self.server.bind(b'/result', self.on_result)
         self.server.bind(b'/reset', self.on_reset)
+        self.server.bind(b'/contact', self.on_contact)
+
+    def on_contact(self, r):
+        self.state_updated = 1
+        self.reset()
+        self.state_updated = 0
 
     def on_result(self, *args):
         """result = [x, x_dot, teta, teta_dot]"""
