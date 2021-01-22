@@ -17,7 +17,7 @@ def rendu():
     num_cpu = 1
     env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
 
-    model = ACKTR.load("/media/data/3D/projets/balance/weights/acktr_blender_250000_1")
+    model = ACKTR.load("./weights/acktr_blender_250000_1")
 
     obs = env.reset()
     for _ in range(100000):
