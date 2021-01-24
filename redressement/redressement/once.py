@@ -60,24 +60,6 @@ def osc_server_init():
     gl.server.bind(b'/action', on_action)
     gl.server.bind(b'/reset', on_reset)
 
-def main_test():
-
-    gl.setLogicTicRate(120)
-
-    gl.all_obj = get_all_objects()
-    gl.empty = gl.all_obj["Empty"]
-    gl.pendulum = gl.all_obj["pendulum"]
-    gl.cube = gl.all_obj["Cube"]
-
-    gl.num = 0
-    gl.reset = 0
-    gl.num_reset = 0
-    gl.action = 0
-
-    gl.server = None
-    gl.send = 0
-    gl.client = OSCClient(b'localhost', 3003)
-
 def main_good():
 
     gl.setLogicTicRate(120)
@@ -86,6 +68,10 @@ def main_good():
     gl.empty = gl.all_obj["Empty"]
     gl.pendulum = gl.all_obj["pendulum"]
     gl.cube = gl.all_obj["Cube"]
+
+    xyz = gl.pendulum.worldOrientation.to_euler()
+    xyz[1] = 3.141592654
+    gl.pendulum.worldOrientation = xyz.to_matrix()
 
     gl.num = 0
     gl.reset = 0
@@ -105,12 +91,6 @@ def main_good():
 def main():
     print("Lancement de once.py ...")
 
-    gl.test = 0
-    if gl.test:
-        main_test()
-    else:
-        main_good()
-
-    gl.redressement = 0
+    main_good()
 
     print("Fin de once.py")

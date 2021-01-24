@@ -21,7 +21,7 @@ from oscpy.client import OSCClient
 from oscpy.server import OSCThreadServer
 
 
-class MyCartPoleEnv(gym.Env):
+class CartPoleRedressementEnv(gym.Env):
 
     def __init__(self):
 
@@ -31,12 +31,12 @@ class MyCartPoleEnv(gym.Env):
         self.steps_beyond_done = None
 
         # Le serveur pour recevoir
-        # #self.server = None
+        self.server = None
         self.osc_server_init()
         # Un simple client pour l'envoi
         self.client = OSCClient(b'localhost', 3001)
-        self.state_updated = 0
 
+        self.state_updated = 0
         self.set_spaces()
 
     def set_spaces(self):
@@ -73,27 +73,28 @@ class MyCartPoleEnv(gym.Env):
         self.state = np.array(np.array(args))
         self.state_updated = 1
 
-    def on_reset(self, r):
-        self.reset()
-
     def step(self, action):
 
-        # Envoi à Blender d'une action à réaliser
-        self.client.send_message(b'/action', [int(action)])
-        print("Action demandée =", action)
+        a = 0
+        while a < 200:
+            # Envoi à Blender d'une action à réaliser
+            self.client.send_message(b'/action', [int(action)])
+            # #print("Action demandée =", action)
 
-        # Attente de la réponse
-        loop = 1
-        while loop:
-            if self.state_updated == 1:
-                x, x_dot, teta, teta_dot = self.state
-                self.state_updated = 0
-                loop = 0
+            # Attente de la réponse
+            loop = 1
+            while loop:
+                if self.state_updated == 1:
+                    x, x_dot, teta, teta_dot = self.state
+                    self.state_updated = 0
+                    loop = 0
+            a += 1
 
-        done = bool(   teta > 0.1
-                    or teta < -0.1
-                    or x > 20
-                    or x < -20)
+        done = bool(   teta > 0.5
+                    or teta < -0.5
+                    or x > 50
+                    or x < -50)
+
         if not done:
             reward = 1.0
         elif self.steps_beyond_done is None:
@@ -110,6 +111,9 @@ class MyCartPoleEnv(gym.Env):
             reward = 0.0
 
         return np.array(self.state), reward, done, {}
+
+    def on_reset(self, r):
+        self.reset()
 
     def reset(self):
         self.state = self.np_random.uniform(low=-0.005, high=0.005, size=(4,))

@@ -5,36 +5,7 @@ import random
 
 def main():
 
-    if gl.test:
-        main_test()
-    else:
-        main_good()
-
-def main_test():
-
-    # Reset tous les ...
-    if gl.num % 1000 == 0:
-        print("Reset ...")
-        gl.reset = [random.uniform(-0.05, 0.05),
-                    random.uniform(-0.005, 0.005),
-                    random.uniform(-0.05, 0.05),
-                    random.uniform(-0.05, 0.05)]
-        print("    ", gl.reset)
-    if gl.reset: reset()
-
-    # Action +1 ou -1 en dehors du reset
-    if gl.num % 5 == 0 and not gl.reset:
-        print("Action ...")
-        gl.action = random.choice([-1, 1])
-        print("    ", gl.action)
-    if gl.action:  action()
-
-    # Si angle trop grand --> perdu --> reset
-    done()
-
-    # Envoi si gl.send = 1
-    send_result()
-    gl.num += 1
+    main_good()
 
 def main_good():
 
@@ -55,19 +26,6 @@ def main_good():
     send_result()
     gl.num += 1
 
-def done():
-    """Si angle trop grand --> perdu --> reset"""
-
-    xyz = gl.pendulum.worldOrientation.to_euler()
-    teta = xyz[1]
-    if teta < -1 or teta > 1:
-        gl.reset = [random.uniform(-0.05, 0.05),
-                    random.uniform(-0.005, 0.005),
-                    random.uniform(-0.05, 0.05),
-                    random.uniform(-0.05, 0.05)]
-        reset()
-        gl.action = 0
-
 def reset():
 
     gl.num_reset += 1
@@ -78,14 +36,11 @@ def reset():
         gl.cube.worldLinearVelocity[0] = x_dot
 
         xyz = gl.pendulum.worldOrientation.to_euler()
-        if not gl.redressement:
-            xyz[1] = teta
-        else:
-            xyz[1] = teta + 3.141592654
+        xyz[1] = teta #  + 3.141592654
         gl.pendulum.worldOrientation = xyz.to_matrix()
         gl.pendulum.worldAngularVelocity[1] = teta_dot
 
-    if gl.num_reset == 200:
+    if gl.num_reset == 400:
         gl.num_reset = 0
         gl.reset = 0
 
