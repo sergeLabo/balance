@@ -8,6 +8,8 @@ Original version from:
 https://github.com/zuoxingdong/DeepPILCO/blob/master/cartpole_swingup.py
 hardmaru's changes:
 More difficult, since dt is 0.05 (not 0.01), and only 200 timesteps
+
+voir DDPG
 """
 
 import sys

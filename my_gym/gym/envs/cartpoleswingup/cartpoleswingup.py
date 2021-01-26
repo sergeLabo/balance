@@ -23,6 +23,7 @@ Original version from:
 https://github.com/zuoxingdong/DeepPILCO/blob/master/cartpole_swingup.py
 hardmaru's changes:
 More difficult, since dt is 0.05 (not 0.01), and only 200 timesteps
+self.dt n'est pas utilisé ici
 """
 
 import sys
@@ -54,20 +55,28 @@ class CartPoleSwingUpEnv(gym.Env):
         self.reset_number = 0
         self.action_number = 0
         self.t = 0  # timestep
-        self.t_limit = 1000
 
         # Angle at which to fail the episode
-        self.teta_threshold_radians = 12 * 2 * math.pi / 360
-        self.x_threshold = 2.4
+        # 12 * 2 * math.pi / 360 = 0,20943951
+        # self.teta_threshold_radians = 0.20943951 ???????
+        self.x_threshold = 10  # 2.4
+        self.t_limit = 1000
+        self.my_reward_total = 0
 
-        # #high = np.array([
-            # #np.finfo(np.float32).max,
-            # #np.finfo(np.float32).max,
-            # #np.finfo(np.float32).max,
-            # #np.finfo(np.float32).max,
-            # #np.finfo(np.float32).max])
+        # N'est pas utilisé mais nécessaire pour gym
+        high = np.array([
+            np.finfo(np.float32).max,
+            np.finfo(np.float32).max,
+            np.finfo(np.float32).max,
+            np.finfo(np.float32).max,
+            np.finfo(np.float32).max])
 
+        # Discrete
         self.action_space = spaces.Discrete(2)
+        self.observation_space = spaces.Box(-high, high)
+
+        # Continuous
+        # #self.action_space = spaces.Box(-1.0, 1.0, shape=(1,))
         # #self.observation_space = spaces.Box(-high, high)
 
         self.seed()
@@ -112,7 +121,8 @@ class CartPoleSwingUpEnv(gym.Env):
         self.action_number += 1
 
         if self.step_number % 100 == 0:
-            print("                    step number =", self.step_number)
+            print("                                              step number =",
+                    self.step_number)
         self.step_number += 1
 
         # Attente de la réponse
@@ -124,38 +134,60 @@ class CartPoleSwingUpEnv(gym.Env):
                 loop = 0
 
         done = False
+        # self.x_threshold =
         if x < -self.x_threshold or x > self.x_threshold:
+            print("En dehors de +-self.x_threshold = +-", self.x_threshold)
             done = True
 
         self.t += 1
 
         if self.t >= self.t_limit:
+            print("Temps supérieur à t_limit =", self.t_limit)
             done = True
 
-        # Reward_teta is 1 when teta is 0, 0 if between 90 and 270
+        # La récompense est définie ici, le goal est 0
+        # Reward_teta is
+        # 1 when teta is 90
+        # np.cos(teta) de 0 to 90 or -90 to 0,
+        # 0 if between 90 and 270 or -270 to -90
+        # 0 < Reward_teta < 1
         reward_teta = max(0, np.cos(teta))
 
         # Reward_x is 0 when cart is at the edge of the screen,
         # 1 when it's in the centre
         reward_x = np.cos((x / self.x_threshold) * (np.pi / 2.0))
-
-        # [0, 1]
+        # La récompense totale
         reward = reward_teta * reward_x
+        self.my_reward_total += reward
 
         obs = np.array([x, x_dot, np.cos(teta), np.sin(teta), teta_dot])
 
         return obs, reward, done, {}
 
     def reset(self):
-        print("Reset ............ ")
-        if self.reset_number % 10 == 0:
-            print("    step reset =", self.reset_number)
-        self.reset_number += 1
+        """np.random.normal()
+            loc floats Mean (centre) of the distribution.
+            scale floats Standard deviation (spread or width) of the distribution
+
+            np.random.normal(   loc=np.array([0.0, 0.0, np.pi, 0.0]),
+                              scale=np.array([0.2, 0.2, 0.2, 0.2]))
+        Le pendule est à teta=0 en haut, pi est ajouté dans always.py pour
+        avoir le zero en bas.
+        """
+        print("Reset ........................................................ ")
         print("    Nombre d'actions demandée =", self.action_number)
         self.action_number = 0
 
-        self.state = np.random.normal(loc=np.array([0.0, 0.0, np.pi, 0.0]),
-                                        scale=np.array([0.2, 0.2, 0.2, 0.2]))
+        if self.reset_number % 10 == 0:
+            print("    step reset =", self.reset_number)
+        self.reset_number += 1
+
+        print("         self.my_reward_total =", int(self.my_reward_total))
+
+        # np.pi remplacé par
+        self.state = np.random.normal(loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
+                                      scale=np.array([0.05, 0.05, 2.0, 0.05]))
+
         self.steps_beyond_done = None
         self.t = 0  # timestep
         x, x_dot, teta, teta_dot = self.state

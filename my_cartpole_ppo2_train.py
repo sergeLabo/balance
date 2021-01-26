@@ -13,7 +13,7 @@ from stable_baselines import PPO2
 def train():
     env = make_vec_env('My-CartPole-v0', n_envs=1)
 
-    model = PPO2(MlpPolicy, env, verbose=1)
+    model = PPO2(MlpPolicy, env, verbose=0)
     n = 250000
     model.learn(total_timesteps=n)
 

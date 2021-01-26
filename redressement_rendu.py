@@ -16,14 +16,14 @@ def rendu():
     num_cpu = 1
     env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
 
-    model = PPO2.load("./weights/ppo2_redressement_500000")
+    model = PPO2.load("./weights/ppo2_redressement_320000")
 
     obs = env.reset()
     for _ in range(100000):
-        sleep(0.02)
+        sleep(0.009)
         action, _states = model.predict(obs)
         obs, rewards, dones, info = env.step(action)
-        print(obs, rewards, dones, info)
+        # #print(obs, rewards, dones, info)
 
 
 if __name__ == '__main__':

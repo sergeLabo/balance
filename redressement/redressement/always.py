@@ -27,20 +27,32 @@ def main_good():
     gl.num += 1
 
 def reset():
-
+    """
+    x,     x_dot, teta, teta_dot
+    -0.03, -0.34, 3.59, 0.21
+    """
     gl.num_reset += 1
     x, x_dot, teta, teta_dot = gl.reset
 
+    # Blocage des positions
     if 1 < gl.num_reset < 200:
         gl.cube.worldPosition = [x, 0.738772, 0]
-        gl.cube.worldLinearVelocity[0] = x_dot
+        gl.cube.worldLinearVelocity[0] = 0
 
+    # Blocage du pendule
+    if 200 < gl.num_reset < 400:
         xyz = gl.pendulum.worldOrientation.to_euler()
-        xyz[1] = teta #  + 3.141592654
+        xyz[1] = teta  # + 3.141592654
         gl.pendulum.worldOrientation = xyz.to_matrix()
+        gl.pendulum.worldAngularVelocity[1] = 0
+
+    # Vitesse initiale
+    if 400 < gl.num_reset < 450:
+        gl.cube.worldLinearVelocity[0] = x_dot
         gl.pendulum.worldAngularVelocity[1] = teta_dot
 
-    if gl.num_reset == 400:
+    # Fin
+    if gl.num_reset == 450:
         gl.num_reset = 0
         gl.reset = 0
 
