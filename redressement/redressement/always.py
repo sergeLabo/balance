@@ -2,12 +2,11 @@
 from bge import logic as gl
 from once import osc_server_init
 import random
+import math
+
 
 def main():
-
-    main_good()
-
-def main_good():
+    set_camera_orientation()
 
     # Demande de reset au serveur pour le cas où
     # blender est lancé après le serveur, ou si blender est relancé
@@ -25,6 +24,15 @@ def main_good():
     # Envoi si gl.send = 1
     send_result()
     gl.num += 1
+
+def set_camera_orientation():
+    """alpha = arcsin(x/y)"""
+
+    tg = gl.cube.worldPosition[0]/gl.camera.worldPosition[1]
+    alpha = math.atan(tg)
+    xyz = gl.camera.worldOrientation.to_euler()
+    xyz[2] = alpha
+    gl.camera.worldOrientation = xyz.to_matrix()
 
 def reset():
     """
@@ -55,11 +63,14 @@ def reset():
     if gl.num_reset == 450:
         gl.num_reset = 0
         gl.reset = 0
+        gl.first = 1
 
 def action():
     """Modification de la vitesse du cube"""
+
     vitesse = gl.action * 0.05
     gl.cube.worldLinearVelocity[0] -= vitesse
+
     if gl.action_new >= 2:
         gl.send = 1
         gl.action_new = 0
@@ -69,7 +80,7 @@ def action():
 def send_result():
     """Envoi de: np.array(self.state), reward, done"""
 
-    if gl.send:
+    if gl.send and not gl.num_reset:  # pas d'envoi si reset en cours
         gl.send = 0
         x = gl.cube.worldPosition.x
         x_dot = gl.cube.worldLinearVelocity.x

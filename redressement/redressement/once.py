@@ -43,10 +43,12 @@ def get_all_objects():
 
     return all_obj
 
-def on_action(action):
-    gl.action = 1 if action == 1 else -1
+def on_action(*args):
+    if not args[0]:
+        gl.action = 1 if args[1] == 1 else -1
+    else:
+        gl.action = args[1]/1000
     gl.action_new = 1
-    # #print("Action ...", gl.action)
 
 def on_reset(*args):
     gl.reset = args
@@ -55,8 +57,8 @@ def on_reset(*args):
              round(gl.reset[1], 2),
              round(gl.reset[2], 2),
              round(gl.reset[3], 2)]
-
-    print("Reset ...", state)
+    print("Reset ...", gl.reset_number, ":", state)
+    gl.reset_number += 1
 
 def osc_server_init():
     gl.server = OSCThreadServer()
@@ -73,6 +75,7 @@ def main_good():
     gl.empty = gl.all_obj["Empty"]
     gl.pendulum = gl.all_obj["pendulum"]
     gl.cube = gl.all_obj["Cube"]
+    gl.camera = gl.all_obj["Camera"]
 
     xyz = gl.pendulum.worldOrientation.to_euler()
     xyz[1] = 3.141592654
@@ -81,6 +84,7 @@ def main_good():
     gl.num = 0
     gl.reset = 0
     gl.num_reset = 0
+    gl.reset_number = 0
     gl.action = 0
     gl.action_new = 0
 

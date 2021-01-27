@@ -1,29 +1,6 @@
+
 """
-from
-https://github.com/TTitcombe/CartPoleSwingUp
-that is fork from
-https://github.com/hardmaru/estool
-
-on pypi
-https://pypi.org/project/gym-cartpole-swingup/
-https://github.com/angelolovatto/gym-cartpole-swingup
-
-
-discrete Cart pole swing-up:
-Adapted from:
-hardmaru - https://github.com/hardmaru/estool/blob/master/custom_envs/cartpole_swingup.py
-Changes:
-* Discrete number of actions.
-    Each action gives provides a force in a certain direction of fixed magnitude,
-    as in CartPole.
-* The reward function has been adapted slightly, to provide 0 reward
-    when the pole is below horizontal
-
-Original version from:
-https://github.com/zuoxingdong/DeepPILCO/blob/master/cartpole_swingup.py
-hardmaru's changes:
-More difficult, since dt is 0.05 (not 0.01), and only 200 timesteps
-self.dt n'est pas utilisé ici
+voir les comments dans my_gym/gym/envs/cartpoleswingup/cartpoleswingup.py
 """
 
 import sys
@@ -45,25 +22,21 @@ from oscpy.server import OSCThreadServer
 logger = logging.getLogger(__name__)
 
 
-class CartPoleSwingUpEnv(gym.Env):
+class CartPoleSwingUpContinuousEnv(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array'],
                 'video.frames_per_second': 50}
 
     def __init__(self):
 
-        self.step_number = 0
-        self.reset_number = 0
-        self.action_number = 0
-        self.t = 0  # timestep
+        self.step_total = 0  # Nombre total de step
+        self.t = -1  # Suivi du nombre de step dans la cycle
+        self.cycle_number = 0 # Suivi du nombre de cycle
 
-        # Angle at which to fail the episode
-        # 12 * 2 * math.pi / 360 = 0,20943951
-        # self.teta_threshold_radians = 0.20943951 ???????
-        self.x_threshold = 10  # 2.4
-        self.t_limit = 1000
+        self.x_threshold = 4 # 2.4
+        self.t_limit = 500
         self.my_reward_total = 0
+        self.reward_old = 0
 
-        # N'est pas utilisé mais nécessaire pour gym
         high = np.array([
             np.finfo(np.float32).max,
             np.finfo(np.float32).max,
@@ -71,22 +44,16 @@ class CartPoleSwingUpEnv(gym.Env):
             np.finfo(np.float32).max,
             np.finfo(np.float32).max])
 
-        # Discrete
-        self.action_space = spaces.Discrete(2)
+        # Action Continue dans [-1, 1]
+        self.action_space = spaces.Box(-1.0, 1.0, shape=(1,))
         self.observation_space = spaces.Box(-high, high)
-
-        # Continuous
-        # #self.action_space = spaces.Box(-1.0, 1.0, shape=(1,))
-        # #self.observation_space = spaces.Box(-high, high)
 
         self.seed()
         self.viewer = None
         self.state = None
 
-        # Le serveur pour recevoir
         self.osc_server_init()
         self.state_updated = 0
-        # Un simple client pour l'envoi
         self.client = OSCClient(b'localhost', 3001)
 
     def osc_server_init(self):
@@ -98,6 +65,7 @@ class CartPoleSwingUpEnv(gym.Env):
 
     def on_contact(self, r):
         self.state_updated = 1
+        print("reset demandé par on_contact")
         self.reset()
         self.state_updated = 0
 
@@ -108,6 +76,7 @@ class CartPoleSwingUpEnv(gym.Env):
         self.state_updated = 1
 
     def on_reset(self, r):
+        print("reset demandé par on_reset")
         self.reset()
 
     def seed(self, seed=None):
@@ -115,15 +84,12 @@ class CartPoleSwingUpEnv(gym.Env):
         return [seed]
 
     def step(self, action):
-        # Envoi à Blender d'une action à réaliser
-        self.client.send_message(b'/action', [0, int(action*1000)])
-        # #print("Action demandée =", action)
-        self.action_number += 1
+        self.step_total += 1
+        self.t += 1
 
-        if self.step_number % 100 == 0:
-            print("                                              step number =",
-                    self.step_number)
-        self.step_number += 1
+        # Envoi à Blender d'une action à réaliser
+        self.client.send_message(b'/action', [1, int(action*1000)])
+
 
         # Attente de la réponse
         loop = 1
@@ -134,29 +100,22 @@ class CartPoleSwingUpEnv(gym.Env):
                 loop = 0
 
         done = False
-        # self.x_threshold =
-        if x < -self.x_threshold or x > self.x_threshold:
-            print("En dehors de +-self.x_threshold = +-", self.x_threshold)
-            done = True
+        # un reset est fait aussi par max_episode_steps=1000
+        # si self.t_limit=1000
+        if self.t > 2:
+            if x < -self.x_threshold or x > self.x_threshold:
+                print("\n\n\n\n..............................................")
+                print("Stop:  x  >", self.x_threshold)
+                done = True
 
-        self.t += 1
 
         if self.t >= self.t_limit:
-            print("Temps supérieur à t_limit =", self.t_limit)
+            print("\n\n\n\n..............................................")
+            print("Stop: step dans le cycle =", self.t_limit)
             done = True
 
-        # La récompense est définie ici, le goal est 0
-        # Reward_teta is
-        # 1 when teta is 90
-        # np.cos(teta) de 0 to 90 or -90 to 0,
-        # 0 if between 90 and 270 or -270 to -90
-        # 0 < Reward_teta < 1
         reward_teta = max(0, np.cos(teta))
-
-        # Reward_x is 0 when cart is at the edge of the screen,
-        # 1 when it's in the centre
         reward_x = np.cos((x / self.x_threshold) * (np.pi / 2.0))
-        # La récompense totale
         reward = reward_teta * reward_x
         self.my_reward_total += reward
 
@@ -174,27 +133,28 @@ class CartPoleSwingUpEnv(gym.Env):
         Le pendule est à teta=0 en haut, pi est ajouté dans always.py pour
         avoir le zero en bas.
         """
-        print("Reset ........................................................ ")
-        print("    Nombre d'actions demandée =", self.action_number)
-        self.action_number = 0
+        print("Reset ...")
+        print("    Cycle n°:", self.cycle_number)
+        print("                    Steps du cycle =", self.t)
+        print("                      Steps totaux =", self.step_total)
+        print("                        Récompense du cycle =",
+                                    int(self.my_reward_total - self.reward_old))
+        eff_tot = 0 if self.step_total == 0 else \
+                                round(self.my_reward_total/self.step_total, 2)
+        print("                 Récompense totale =", int(self.my_reward_total))
+        print("                Efficacité globale =", eff_tot)
+        self.reward_old = self.my_reward_total
 
-        if self.reset_number % 10 == 0:
-            print("    step reset =", self.reset_number)
-        self.reset_number += 1
-
-        print("         self.my_reward_total =", int(self.my_reward_total))
-
-        # np.pi remplacé par
+        # np.pi remplacé par 3.141592654
         self.state = np.random.normal(loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
-                                      scale=np.array([0.05, 0.05, 2.0, 0.05]))
-
-        self.steps_beyond_done = None
-        self.t = 0  # timestep
+                                      scale=np.array([0.1, 0.1, 5, 0.1]))
         x, x_dot, teta, teta_dot = self.state
 
-        self.client.send_message(b'/reset', self.state)
         self.steps_beyond_done = None
+        self.t = -1
+        self.cycle_number += 1
 
+        self.client.send_message(b'/reset', self.state)
         obs = np.array([x, x_dot, np.cos(teta), np.sin(teta), teta_dot])
         return obs
 

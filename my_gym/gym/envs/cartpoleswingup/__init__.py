@@ -9,8 +9,7 @@ import gym
 from gym import make as gym_make
 
 from .cartpoleswingup import CartPoleSwingUpEnv
-from .cartpoleswingup_continuous import CartPoleSwingUpContinuousEnv
-
+from .my_swing_continuous import CartPoleSwingUpContinuousEnv
 
 def make(env_name, *make_args, **make_kwargs):
     if env_name == "CartPoleSwingUp":

@@ -5,14 +5,14 @@ from gym.envs.registration import registry, register, make, spec
 register(
     id='CartPoleSwingUp-v0',
     entry_point='gym.envs.cartpoleswingup:CartPoleSwingUpEnv',
-    max_episode_steps=2000,
+    max_episode_steps=1000,
     reward_threshold=400,
 )
 
 register(
     id='CartPoleSwingUpContinuous-v0',
     entry_point='gym.envs.cartpoleswingup:CartPoleSwingUpContinuousEnv',
-    max_episode_steps=500,
+    max_episode_steps=1000,
     reward_threshold=400,
 )
 
