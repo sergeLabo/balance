@@ -32,7 +32,7 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.t = -1  # Suivi du nombre de step dans la cycle
         self.cycle_number = 0 # Suivi du nombre de cycle
 
-        self.x_threshold = 4 # 2.4
+        self.x_threshold = 8 # 2.4
         self.t_limit = 500
         self.my_reward_total = 0
         self.reward_old = 0

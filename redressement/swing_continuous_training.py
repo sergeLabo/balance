@@ -1,6 +1,9 @@
 
 import sys
-sys.path.append('my_gym')
+try:
+    sys.path.append('/media/data/3D/projets/balance/my_gym')
+except:
+    sys.path.append('my_gym')
 import gym
 
 from time import time
@@ -30,7 +33,7 @@ def train():
                     param_noise=param_noise,
                     action_noise=action_noise)
 
-    n = 1000018
+    n = 1000201
     model.learn(total_timesteps=n)
 
     model.save("./weights/DDPG_Swing_" + str(n))
