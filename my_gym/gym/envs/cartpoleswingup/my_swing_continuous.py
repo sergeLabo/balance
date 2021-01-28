@@ -56,6 +56,13 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.state_updated = 0
         self.client = OSCClient(b'localhost', 3001)
 
+    def get_self_state(self):
+        """L'initialisation de self.state dans reset, valeurs changées lors de
+        Hyperparameters Optimization
+        """
+        return np.random.normal(loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
+                                      scale=np.array([0.1, 0.1, 5, 0.1]))
+
     def osc_server_init(self):
         self.server = OSCThreadServer()
         self.server.listen('localhost', port=3003, default=True)
@@ -146,8 +153,10 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.reward_old = self.my_reward_total
 
         # np.pi remplacé par 3.141592654
-        self.state = np.random.normal(loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
-                                      scale=np.array([0.1, 0.1, 5, 0.1]))
+        # #self.state = np.random.normal(loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
+                                      # #scale=np.array([0.1, 0.1, 5, 0.1]))
+        self.state = self.get_self_state()
+
         x, x_dot, teta, teta_dot = self.state
 
         self.steps_beyond_done = None
