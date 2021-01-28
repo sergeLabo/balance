@@ -15,15 +15,6 @@ Reinforcement learning
 * stable-baselines
 * [oscpy de kivy super pratique](https://ressources.labomedia.org/kivy_oscpy) pour le lien entre les scripts de Blender et les fichiers d'environnement
 
-### Installation approximative
-
-~~~~
-sudo pip3 install oscpy
-git clone https://github.com/hill-a/stable-baselines && cd stable-baselines
-pip install -e .[docs,tests,mpi]
-sudo pip3 install -e .[docs,tests,mpi]
-sudo pip3 install tensorflow==1.15
-~~~~
 
 ### 1ère étape: Maintien du pendule en équilibre
 
