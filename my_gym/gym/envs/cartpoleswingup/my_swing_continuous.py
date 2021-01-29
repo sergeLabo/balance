@@ -3,6 +3,7 @@
 voir les comments dans my_gym/gym/envs/cartpoleswingup/cartpoleswingup.py
 """
 
+from time import time
 import sys
 try:
     sys.path.append('/media/data/3D/projets/balance/my_gym')
@@ -27,13 +28,13 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
                 'video.frames_per_second': 50}
 
     def __init__(self):
-
+        self.tzero = time()
         self.step_total = 0  # Nombre total de step
         self.t = -1  # Suivi du nombre de step dans la cycle
         self.cycle_number = 0 # Suivi du nombre de cycle
 
         self.x_threshold = 8 # 2.4
-        self.t_limit = 500
+        self.t_limit = 2000
         self.my_reward_total = 0
         self.reward_old = 0
 
@@ -95,7 +96,7 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.t += 1
 
         # Envoi à Blender d'une action à réaliser
-        self.client.send_message(b'/action', [1, int(action*1000)])
+        self.client.send_message(b'/action', [1, int(action*500)])
 
 
         # Attente de la réponse
@@ -121,14 +122,56 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
             print("Stop: step dans le cycle =", self.t_limit)
             done = True
 
-        reward_teta = max(0, np.cos(teta))
-        reward_x = np.cos((x / self.x_threshold) * (np.pi / 2.0))
-        reward = reward_teta * reward_x
-        self.my_reward_total += reward
 
+        reward = self.get_reward()
+        self.my_reward_total += reward  # mes stats
         obs = np.array([x, x_dot, np.cos(teta), np.sin(teta), teta_dot])
 
         return obs, reward, done, {}
+
+    def get_reward(self):
+        """Calcul original
+        reward_teta = max(0, np.cos(teta))
+        reward_x = np.cos((x / self.x_threshold) * (np.pi / 2.0))
+        reward = reward_teta * reward_x
+
+        Mon calcul:
+
+        chariot: si x_threshold = 8, rew=0 si x=6 ou -6, rew=1 si x=0
+                PLAGE = 6 = x_threshold*3/4
+                sin va de -1 à 1, donc il faut +1
+                1 + math.sin((x+PLAGE)*(np.pi/2*PLAGE))
+
+        balancier: longueur du balancier = LONG = 3
+            rew=0 si teta=pi=en bas, rew=1 si teta=0=2pi
+                sin((x+LONG)(np.pi/4*LONG))
+        """
+        x, x_dot, teta, teta_dot = self.state
+
+        # Chariot
+        PLAGE = self.x_threshold*3/4  # = 6
+        if x < -PLAGE or x > PLAGE:
+            reward_chariot = 0
+        else:
+            X = (x + PLAGE) * (np.pi/PLAGE)
+            reward_chariot = 0.5*(1 - np.cos(X))
+
+        # Balancier
+        X = (1 + np.cos(teta)) * (np.pi/2)
+        reward_balancier = 0.5*(1 - np.cos(X))
+
+        reward_total = reward_chariot*reward_balancier
+
+        if self.t % 20 == 0:
+            beta = teta*180/np.pi
+            print(  f"x = {float(x):.2}"
+                    f"\tChariot = \t{float(reward_chariot):.2}"
+                    f"\tteta = \t{float(teta):.2}"
+                    f"\t{int(beta)}"
+                    f"\tBalancier =\t{float(reward_balancier):.2}"
+                    f"\tTotal\t{float(reward_total):.2}")
+
+        return reward_total
 
     def reset(self):
         """np.random.normal()
@@ -146,11 +189,17 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         print("                      Steps totaux =", self.step_total)
         print("                        Récompense du cycle =",
                                     int(self.my_reward_total - self.reward_old))
+        if self.t != 0:
+            eff = round((self.my_reward_total/self.t), 2)
+            print("                        Efficacité du cycle =", eff)
+
         eff_tot = 0 if self.step_total == 0 else \
                                 round(self.my_reward_total/self.step_total, 2)
         print("                 Récompense totale =", int(self.my_reward_total))
         print("                Efficacité globale =", eff_tot)
         self.reward_old = self.my_reward_total
+        theures = round((time() - self.tzero)/3600, 2)
+        print("                      Temps écoulé =", theures)
 
         # np.pi remplacé par 3.141592654
         # #self.state = np.random.normal(loc=np.array([0.0, 0.0, 3.141592654, 0.0]),

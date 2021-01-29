@@ -1,8 +1,9 @@
-
 import sys
-sys.path.append('my_gym')
+try:
+    sys.path.append('/media/data/3D/projets/balance/my_gym')
+except:
+    sys.path.append('my_gym')
 import gym
-
 from time import sleep
 
 from stable_baselines.common.policies import MlpPolicy
@@ -16,7 +17,7 @@ def rendu():
     num_cpu = 1
     env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
 
-    model = DDPG.load("./weights/DDPG_Swing_1000018")
+    model = DDPG.load("./weights/DDPG_Swing_101113")
 
     obs = env.reset()
     for _ in range(100000):
