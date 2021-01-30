@@ -47,18 +47,27 @@ def on_action(*args):
     if not args[0]:
         gl.action = 1 if args[1] == 1 else -1
     else:
-        gl.action = args[1]/1000
+        gl.action = args[1]/10000
     gl.action_new = 1
 
 def on_reset(*args):
-    gl.reset = args
+
+    gl.reset = (args[0]/1000,
+                args[1]/1000,
+                args[2]/1000,
+                args[3]/1000)
+
+    # Pour suivi du reset en cours
     gl.num_reset = 0
+    # Pour suivi des reset reçu à afficher
+    gl.reset_number += 1
+
+    # Pour l'affichage
     state = [round(gl.reset[0], 2),
              round(gl.reset[1], 2),
              round(gl.reset[2], 2),
              round(gl.reset[3], 2)]
     print("Reset ...", gl.reset_number, ":", state)
-    gl.reset_number += 1
 
 def osc_server_init():
     gl.server = OSCThreadServer()

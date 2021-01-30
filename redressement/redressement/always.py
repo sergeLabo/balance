@@ -38,19 +38,26 @@ def reset():
     """
     x,     x_dot, teta, teta_dot
     -0.03, -0.34, 3.59, 0.21
+    enableRigidBody()
+    disableRigidBody()
     """
     gl.num_reset += 1
     x, x_dot, teta, teta_dot = gl.reset
 
     # Blocage des positions
     if 1 < gl.num_reset < 200:
+        gl.cube.suspendDynamics()
+        gl.pendulum.disableRigidBody()
         gl.cube.worldPosition = [x, 0.738772, 0]
         gl.cube.worldLinearVelocity[0] = 0
 
     # Blocage du pendule
     if 200 < gl.num_reset < 400:
+        gl.cube.restoreDynamics()
+        gl.pendulum.enableRigidBody()
         xyz = gl.pendulum.worldOrientation.to_euler()
-        xyz[1] = teta  # + 3.141592654
+        # Le pendule est à teta=0 en haut
+        xyz[1] = teta
         gl.pendulum.worldOrientation = xyz.to_matrix()
         gl.pendulum.worldAngularVelocity[1] = 0
 

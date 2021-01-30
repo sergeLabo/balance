@@ -60,6 +60,12 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
     def get_self_state(self):
         """L'initialisation de self.state dans reset, valeurs changées lors de
         Hyperparameters Optimization
+        np.random.normal()
+            loc floats Mean (centre) of the distribution.
+            scale floats Standard deviation (spread or width) of the distribution
+            original => np.random.normal(loc=np.array([0.0, 0.0, np.pi, 0.0]),
+                                         scale=np.array([0.2, 0.2, 0.2, 0.2]))
+        Le pendule est à teta=0 en haut.
         """
         return np.random.normal(loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
                                       scale=np.array([0.1, 0.1, 5, 0.1]))
@@ -96,7 +102,8 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.t += 1
 
         # Envoi à Blender d'une action à réaliser
-        self.client.send_message(b'/action', [1, int(action*500)])
+                # Division par 10000 dans Blender
+        self.client.send_message(b'/action', [1, int(action*5000)])
 
 
         # Attente de la réponse
@@ -112,13 +119,13 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         # si self.t_limit=1000
         if self.t > 2:
             if x < -self.x_threshold or x > self.x_threshold:
-                print("\n\n\n\n..............................................")
+                print("\n")
                 print("Stop:  x  >", self.x_threshold)
                 done = True
 
 
         if self.t >= self.t_limit:
-            print("\n\n\n\n..............................................")
+            print("\n")
             print("Stop: step dans le cycle =", self.t_limit)
             done = True
 
@@ -137,19 +144,26 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
 
         Mon calcul:
 
-        chariot: si x_threshold = 8, rew=0 si x=6 ou -6, rew=1 si x=0
-                PLAGE = 6 = x_threshold*3/4
-                sin va de -1 à 1, donc il faut +1
-                1 + math.sin((x+PLAGE)*(np.pi/2*PLAGE))
+        chariot: si x_threshold = 8, rew=0 si x=4 ou -4, rew=1 si x=0
+            PLAGE = 4 = x_threshold*2/4
+            X varie de 0 à 2 Pi
+            x = -4 -->  X = 0   -->  y = reward = 0
+            x = 0  -->  X = Pi  -->  y = reward = 1
+            x = 4  -->  X = 2Pi -->  y = reward = 0
+            X = (x + PLAGE) * (np.pi/PLAGE)
+            reward_chariot = 0.5*(1 - np.cos(X))
 
-        balancier: longueur du balancier = LONG = 3
-            rew=0 si teta=pi=en bas, rew=1 si teta=0=2pi
-                sin((x+LONG)(np.pi/4*LONG))
+        balancier: longueur du balancier = rayon = 1
+            teta = varie de 0 à 2 Pi
+            teta = 0    --> y = reward = 1
+            teta = Pi   --> y = reward = 0
+            teta = 2Pi  --> y = reward = 1
+            reward_balancier = 0.5*(np.cos(teta) + 1)
         """
         x, x_dot, teta, teta_dot = self.state
 
         # Chariot
-        PLAGE = self.x_threshold*3/4  # = 6
+        PLAGE = self.x_threshold*2/4  # = 6
         if x < -PLAGE or x > PLAGE:
             reward_chariot = 0
         else:
@@ -157,40 +171,28 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
             reward_chariot = 0.5*(1 - np.cos(X))
 
         # Balancier
-        X = (1 + np.cos(teta)) * (np.pi/2)
-        reward_balancier = 0.5*(1 - np.cos(X))
-
+        reward_balancier = 0.5*(np.cos(teta) + 1)
         reward_total = reward_chariot*reward_balancier
 
         if self.t % 20 == 0:
             beta = teta*180/np.pi
-            print(  f"x = {float(x):.2}"
-                    f"\tChariot = \t{float(reward_chariot):.2}"
-                    f"\tteta = \t{float(teta):.2}"
-                    f"\t{int(beta)}"
-                    f"\tBalancier =\t{float(reward_balancier):.2}"
-                    f"\tTotal\t{float(reward_total):.2}")
+            print(  f"x = {float(x):.2f}"
+                    f"\tChariot = \t{float(reward_chariot):.2f}"
+                    f"\tteta = \t{int(beta)}"
+                    f"\tBalancier =\t{float(reward_balancier):.2f}"
+                    f"\tTotal\t{float(reward_total):.2f}")
 
         return reward_total
 
     def reset(self):
-        """np.random.normal()
-            loc floats Mean (centre) of the distribution.
-            scale floats Standard deviation (spread or width) of the distribution
 
-            np.random.normal(   loc=np.array([0.0, 0.0, np.pi, 0.0]),
-                              scale=np.array([0.2, 0.2, 0.2, 0.2]))
-        Le pendule est à teta=0 en haut, pi est ajouté dans always.py pour
-        avoir le zero en bas.
-        """
-        print("Reset ...")
-        print("    Cycle n°:", self.cycle_number)
+        print("\n    Cycle n°:", self.cycle_number)
         print("                    Steps du cycle =", self.t)
         print("                      Steps totaux =", self.step_total)
         print("                        Récompense du cycle =",
                                     int(self.my_reward_total - self.reward_old))
         if self.t != 0:
-            eff = round((self.my_reward_total/self.t), 2)
+            eff = int(100*(self.my_reward_total - self.reward_old)/self.t)
             print("                        Efficacité du cycle =", eff)
 
         eff_tot = 0 if self.step_total == 0 else \
@@ -200,19 +202,26 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.reward_old = self.my_reward_total
         theures = round((time() - self.tzero)/3600, 2)
         print("                      Temps écoulé =", theures)
+        print("..............................................\n\n")
+        print("Nouvel épisode ...\n")
 
-        # np.pi remplacé par 3.141592654
-        # #self.state = np.random.normal(loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
-                                      # #scale=np.array([0.1, 0.1, 5, 0.1]))
+        # #data =  str(self.step_total) + " " +\
+                # #str(str(self.t) + " " +\
+                # #str(self.my_reward_total) + " " +\
+                # #str(theures) + " "
+
         self.state = self.get_self_state()
-
         x, x_dot, teta, teta_dot = self.state
-
         self.steps_beyond_done = None
         self.t = -1
         self.cycle_number += 1
 
-        self.client.send_message(b'/reset', self.state)
+        # J'ai un gros doute sue l'envoi de float
+        msg = [ int(x*1000), int(x*x_dot*1000),
+                int(x*teta*1000), int(x*teta_dot*1000)]
+        self.client.send_message(b'/reset', msg)
+        print("Reset ...", msg)
+
         obs = np.array([x, x_dot, np.cos(teta), np.sin(teta), teta_dot])
         return obs
 
