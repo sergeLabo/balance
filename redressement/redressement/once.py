@@ -1,8 +1,41 @@
 
+import numpy as np
+from random import randint
 from bge import logic as gl
 
 from oscpy.client import OSCClient
 from oscpy.server import OSCThreadServer
+
+
+class RealCam:
+    def __init__(self, amplitude, longueur):
+        """
+        amplitude int a adapter si loc ou rot
+        longueur int de 1 à 10
+        """
+        self.amplitude = amplitude
+        self.longueur = longueur
+        self.reset()
+        # Valeur courante
+        self.x = 0
+        self.y = 0
+
+    def update(self):
+        self.x += 1
+        self.y = self.a*np.sin(2*np.pi*self.x/self.period)
+        if gl.frame - self.initial_frame == self.period:
+            print("Reset")
+            self.reset()
+
+    def reset(self):
+        # Amplitude de la sinusoïde
+        self.a = self.amplitude * randint(1, 10)
+        # Frame de début de la sinusoïde
+        self.initial_frame = gl.frame
+        # Durée de la sinusoïde
+        self.period = self.longueur * randint(6, 60)
+        # Valeur courante
+        self.x = 0
 
 
 def get_all_scenes():
@@ -79,6 +112,7 @@ def osc_server_init():
 def main_good():
 
     gl.setLogicTicRate(120)
+    gl.frame = 0
 
     gl.all_obj = get_all_objects()
     gl.empty = gl.all_obj["Empty"]

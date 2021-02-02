@@ -14,13 +14,12 @@ import gym
 from gym import spaces
 from gym.utils import seeding
 import logging
-import math
 import numpy as np
 
 from oscpy.client import OSCClient
 from oscpy.server import OSCThreadServer
 
-logger = logging.getLogger(__name__)
+# #logger = logging.getLogger(__name__)
 
 
 class CartPoleSwingUpContinuousEnv(gym.Env):
@@ -34,9 +33,11 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.cycle_number = 0 # Suivi du nombre de cycle
 
         self.x_threshold = 8 # 2.4
-        self.t_limit = 2000
+        self.t_limit = 4001
         self.my_reward_total = 0
         self.reward_old = 0
+        # Valeur maxi de teta_dot
+        self.VMAX =1
 
         high = np.array([
             np.finfo(np.float32).max,
@@ -105,7 +106,6 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
                 # Division par 10000 dans Blender
         self.client.send_message(b'/action', [1, int(action*5000)])
 
-
         # Attente de la réponse
         loop = 1
         while loop:
@@ -123,12 +123,10 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
                 print("Stop:  x  >", self.x_threshold)
                 done = True
 
-
         if self.t >= self.t_limit:
             print("\n")
             print("Stop: step dans le cycle =", self.t_limit)
             done = True
-
 
         reward = self.get_reward()
         self.my_reward_total += reward  # mes stats
@@ -163,7 +161,7 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         x, x_dot, teta, teta_dot = self.state
 
         # Chariot
-        PLAGE = self.x_threshold*2/4  # = 6
+        PLAGE = self.x_threshold*2/4  # = 4
         if x < -PLAGE or x > PLAGE:
             reward_chariot = 0
         else:
@@ -171,16 +169,42 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
             reward_chariot = 0.5*(1 - np.cos(X))
 
         # Balancier
-        reward_balancier = 0.5*(np.cos(teta) + 1)
-        reward_total = reward_chariot*reward_balancier
+        # sans k reward_balancier = 0.5*(np.cos(teta) + 1)
+        # koeff entre 1 et 2
+        # si 1 --> reward sur [0, pi]
+        # si 2 --> reward sur [0, pi/2]
+        koeff = 2
+        if -np.pi/koeff < teta < np.pi/koeff:
+            reward_balancier = 0.5*(np.cos(teta*koeff) + 1)
+        else:
+            reward_balancier = 0
+
+        # Récompense si vitesse basse en haut
+        self.VMAX = max(self.VMAX, teta_dot)
+        RV = 1
+        angle = 0.2 # radian= 12 deg
+        penalty = 0.8
+        if -angle < teta < angle:
+            a = - (angle / self.VMAX)
+            b = 1
+            K = (a * abs(teta_dot)) + b
+            X = np.pi * teta / 0.2
+            RV = (1 - penalty) * (0.5 * (np.cos(X) + 1)) + penalty
+            # #print(round(X, 2), round(RV, 2))
+        else:
+            RV = 1
+
+        reward_total = reward_chariot*reward_balancier*RV
 
         if self.t % 20 == 0:
             beta = teta*180/np.pi
             print(  f"x = {float(x):.2f}"
                     f"\tChariot = \t{float(reward_chariot):.2f}"
                     f"\tteta = \t{int(beta)}"
-                    f"\tBalancier =\t{float(reward_balancier):.2f}"
-                    f"\tTotal\t{float(reward_total):.2f}")
+                    f"\tBalancier = \t{float(reward_balancier):.2f}"
+                    f"\tRV = \t{RV:.2f}"
+                    f"\tTotal = \t{float(reward_total):.2f}"
+                    )
 
         return reward_total
 
@@ -202,7 +226,7 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.reward_old = self.my_reward_total
         theures = round((time() - self.tzero)/3600, 2)
         print("                      Temps écoulé =", theures)
-        print("..............................................\n\n")
+        print("."*118 + "\n\n")
         print("Nouvel épisode ...\n")
 
         # #data =  str(self.step_total) + " " +\

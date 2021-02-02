@@ -6,6 +6,9 @@ import math
 
 
 def main():
+    # Pour tout le jeu
+    gl.frame += 1
+
     set_camera_orientation()
 
     # Demande de reset au serveur pour le cas où
