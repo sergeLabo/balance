@@ -18,7 +18,7 @@ def train():
 
     env = make_vec_env('CartPoleSwingUpContinuous-v0', n_envs=1)
     model = PPO2(MlpPolicy, env, verbose=0)
-    n = 1010112
+    n = 4010000
     model.learn(total_timesteps=n)
     model.save("./weights/PPO2_Swing_" + str(n))
 
@@ -28,6 +28,7 @@ if __name__ == '__main__':
     train()
     t = (time()-t0)/3600
     print("Temps d'apprentissage en heure =", round(t, 3))
+
 
 """
 nuit du 1 au 2

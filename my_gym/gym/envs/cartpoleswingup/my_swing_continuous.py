@@ -33,7 +33,7 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.cycle_number = 0 # Suivi du nombre de cycle
 
         self.x_threshold = 8 # 2.4
-        self.t_limit = 4001
+        self.t_limit = 2000
         self.my_reward_total = 0
         self.reward_old = 0
         # Valeur maxi de teta_dot
@@ -173,7 +173,7 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         # koeff entre 1 et 2
         # si 1 --> reward sur [0, pi]
         # si 2 --> reward sur [0, pi/2]
-        koeff = 2
+        koeff = 1.8
         if -np.pi/koeff < teta < np.pi/koeff:
             reward_balancier = 0.5*(np.cos(teta*koeff) + 1)
         else:
@@ -182,8 +182,8 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         # Récompense si vitesse basse en haut
         self.VMAX = max(self.VMAX, teta_dot)
         RV = 1
-        angle = 0.2 # radian= 12 deg
-        penalty = 0.8
+        angle = 0.3 # radian= 12 deg
+        penalty = 0.7
         if -angle < teta < angle:
             a = - (angle / self.VMAX)
             b = 1
