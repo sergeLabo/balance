@@ -18,7 +18,7 @@ def train():
 
     env = make_vec_env('CartPoleSwingUpContinuous-v0', n_envs=1)
     model = PPO2(MlpPolicy, env, verbose=0)
-    n = 4010000
+    n = 6000000
     model.learn(total_timesteps=n)
     model.save("./weights/PPO2_Swing_" + str(n))
 
@@ -31,6 +31,50 @@ if __name__ == '__main__':
 
 
 """
+lancé le 04/02/2021 sur tour sans cuda
+n = 6000000
+correction bug msg reset x*
+self.x_threshold = 8 # 2.4
+self.t_limit = 2000
+loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
+scale=np.array([0.1, 0.1, 1.0, 0.1])
+PLAGE = self.x_threshold*2/4
+koeff = 1.8
+angle = 0.3 # radian= 12 deg
+penalty = 0.7
+self.t_limit = 2000
+
+
+04/02/2021
+n = 3030303
+Cycle n°: 1545
+Steps du cycle = 2000
+Steps totaux = 3030060
+Récompense du cycle = 700
+Efficacité du cycle = 35
+Récompense totale = 902711
+Efficacité globale = 0.3
+Temps écoulé = 16.2
+
+03/02/2021
+PPO2_Swing_1010101
+koeff = 1.8
+self.x_threshold = 8 # 2.4
+self.t_limit = 2000
+angle = 0.3 # radian= 12 deg
+penalty = 0.7
+PLAGE = self.x_threshold*2/4
+Cycle n°: 582
+Steps du cycle = 2000
+Steps totaux = 1008649
+Récompense du cycle = 836
+Efficacité du cycle = 41
+Récompense totale = 243407
+Efficacité globale = 0.24
+Temps écoulé = 5.47
+
+
+
 nuit du 1 au 2
 n = 1 010 112 le meilleur, s'arrete un peu en haut,
 mais ne cherche pas à stabiliser

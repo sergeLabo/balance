@@ -1,6 +1,9 @@
 
 import sys
-sys.path.append('my_gym')
+try:
+    sys.path.append('/media/data/3D/projets/balance/my_gym')
+except:
+    sys.path.append('my_gym')
 import gym
 
 from time import sleep

@@ -37,7 +37,7 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.my_reward_total = 0
         self.reward_old = 0
         # Valeur maxi de teta_dot
-        self.VMAX =1
+        self.VMAX = 1
 
         high = np.array([
             np.finfo(np.float32).max,
@@ -68,8 +68,11 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
                                          scale=np.array([0.2, 0.2, 0.2, 0.2]))
         Le pendule est à teta=0 en haut.
         """
+        # #return np.random.normal(loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
+                                      # #scale=np.array([0.1, 0.1, 5, 0.1]))
+
         return np.random.normal(loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
-                                      scale=np.array([0.1, 0.1, 5, 0.1]))
+                                      scale=np.array([0.1, 0.1, 1.0, 0.1]))
 
     def osc_server_init(self):
         self.server = OSCThreadServer()
@@ -241,8 +244,8 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.cycle_number += 1
 
         # J'ai un gros doute sue l'envoi de float
-        msg = [ int(x*1000), int(x*x_dot*1000),
-                int(x*teta*1000), int(x*teta_dot*1000)]
+        msg = [ int(x*1000), int(x_dot*1000),
+                int(teta*1000), int(teta_dot*1000)]
         self.client.send_message(b'/reset', msg)
         print("Reset ...", msg)
 

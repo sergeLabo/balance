@@ -12,7 +12,7 @@ register(
 register(
     id='CartPoleSwingUpContinuous-v0',
     entry_point='gym.envs.cartpoleswingup:CartPoleSwingUpContinuousEnv',
-    max_episode_steps=2001,
+    max_episode_steps=4001,
     reward_threshold=400,
 )
 

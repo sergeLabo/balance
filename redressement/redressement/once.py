@@ -8,13 +8,15 @@ from oscpy.server import OSCThreadServer
 
 
 class RealCam:
-    def __init__(self, amplitude, longueur):
+    def __init__(self, amplitude, duree):
         """
         amplitude int a adapter si loc ou rot
         longueur int de 1 à 10
         """
         self.amplitude = amplitude
-        self.longueur = longueur
+        self.haut = self.amplitude*randint(1, 5)
+        self.duree = duree
+        self.period = self.duree*randint(50, 500)
         self.reset()
         # Valeur courante
         self.x = 0
@@ -22,18 +24,15 @@ class RealCam:
 
     def update(self):
         self.x += 1
-        self.y = self.a*np.sin(2*np.pi*self.x/self.period)
+        self.y = self.haut*np.sin(2*np.pi*self.x/self.period)
         if gl.frame - self.initial_frame == self.period:
-            print("Reset")
             self.reset()
 
     def reset(self):
-        # Amplitude de la sinusoïde
-        self.a = self.amplitude * randint(1, 10)
         # Frame de début de la sinusoïde
+        self.haut = int(self.amplitude*randint(1, 5))
         self.initial_frame = gl.frame
-        # Durée de la sinusoïde
-        self.period = self.longueur * randint(6, 60)
+        self.period = int(self.duree*randint(100, 300))
         # Valeur courante
         self.x = 0
 
@@ -113,6 +112,12 @@ def main_good():
 
     gl.setLogicTicRate(120)
     gl.frame = 0
+    # Horizontal cam
+    gl.rc_h = RealCam(0.02, 1)
+    # Vertical cam
+    gl.rc_v = RealCam(0.02, 1)
+    # Profondeur Cam
+    gl.rc_p = RealCam(1, 5)
 
     gl.all_obj = get_all_objects()
     gl.empty = gl.all_obj["Empty"]
