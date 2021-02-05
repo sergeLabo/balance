@@ -8,7 +8,6 @@ import math
 def main():
     # Pour tout le jeu
     gl.frame += 1
-
     set_camera_orientation()
 
     # Demande de reset au serveur pour le cas où
@@ -51,6 +50,9 @@ def reset():
     enableRigidBody()
     disableRigidBody()
     """
+    gl.phase["Text"] = "Reset ...."
+    gl.info["Text"] = gl.info_text
+
     gl.num_reset += 1
     x, x_dot, teta, teta_dot = gl.reset
 
@@ -81,6 +83,8 @@ def reset():
         gl.num_reset = 0
         gl.reset = 0
         gl.first = 1
+        gl.phase["Text"] = ""
+        gl.info["Text"] = ""
 
 def action():
     """Modification de la vitesse du cube"""

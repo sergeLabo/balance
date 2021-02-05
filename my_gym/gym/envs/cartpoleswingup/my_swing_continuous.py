@@ -4,6 +4,8 @@ voir les comments dans my_gym/gym/envs/cartpoleswingup/cartpoleswingup.py
 """
 
 from time import time
+from json import dumps, loads
+
 import sys
 try:
     sys.path.append('/media/data/3D/projets/balance/my_gym')
@@ -19,12 +21,8 @@ import numpy as np
 from oscpy.client import OSCClient
 from oscpy.server import OSCThreadServer
 
-# #logger = logging.getLogger(__name__)
-
 
 class CartPoleSwingUpContinuousEnv(gym.Env):
-    metadata = {'render.modes': ['human', 'rgb_array'],
-                'video.frames_per_second': 50}
 
     def __init__(self):
         self.tzero = time()
@@ -57,6 +55,8 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.osc_server_init()
         self.state_updated = 0
         self.client = OSCClient(b'localhost', 3001)
+        self.info = ""
+        self.log_file = "./log-" + time.strftime("%Y%m%d-%H%M%S") + ".txt"
 
     def get_self_state(self):
         """L'initialisation de self.state dans reset, valeurs changées lors de
@@ -68,11 +68,8 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
                                          scale=np.array([0.2, 0.2, 0.2, 0.2]))
         Le pendule est à teta=0 en haut.
         """
-        # #return np.random.normal(loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
-                                      # #scale=np.array([0.1, 0.1, 5, 0.1]))
-
         return np.random.normal(loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
-                                      scale=np.array([0.1, 0.1, 1.0, 0.1]))
+                                      scale=np.array([0.1, 0.1, 2.0, 0.1]))
 
     def osc_server_init(self):
         self.server = OSCThreadServer()
@@ -106,7 +103,7 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.t += 1
 
         # Envoi à Blender d'une action à réaliser
-                # Division par 10000 dans Blender
+        # Division par 10000 dans Blender
         self.client.send_message(b'/action', [1, int(action*5000)])
 
         # Attente de la réponse
@@ -116,20 +113,41 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
                 x, x_dot, teta, teta_dot = self.state
                 self.state_updated = 0
                 loop = 0
+                # #print(abs(teta_dot))
 
-        done = False
-        # un reset est fait aussi par max_episode_steps=1000
-        # si self.t_limit=1000
+        # Fin si trop à gauche ou à droite
         if self.t > 2:
             if x < -self.x_threshold or x > self.x_threshold:
                 print("\n")
                 print("Stop:  x  >", self.x_threshold)
+                self.info = "Chariot trop à gauche ou à droite"
                 done = True
 
-        if self.t >= self.t_limit:
+        # Fin si trop de step
+        elif self.t >= self.t_limit:
             print("\n")
             print("Stop: step dans le cycle =", self.t_limit)
+            self.info = "Step dans le cycle >" + str(self.t_limit)
             done = True
+
+        # Fin si tourne en rond soit avec vitesse forte en haut
+        elif self.t > 2:
+            vmax = 2
+            if abs(teta) < 0.05:
+                if abs(teta_dot) > vmax:
+                    print("\n")
+                    print("Stop: vitesse en haut =", teta_dot, ">", vmax,
+                                                    "à", teta)
+                    self.info = "Vitesse en haut trop rapide"
+                    done = True
+
+        else:
+            done = False
+            self.info = ""
+
+        if self.info:
+            self.client.send_message(b'/info', [self.info])
+            self.info = ""
 
         reward = self.get_reward()
         self.my_reward_total += reward  # mes stats
@@ -199,7 +217,7 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
 
         reward_total = reward_chariot*reward_balancier*RV
 
-        if self.t % 20 == 0:
+        if self.t % 240 == 0:
             beta = teta*180/np.pi
             print(  f"x = {float(x):.2f}"
                     f"\tChariot = \t{float(reward_chariot):.2f}"
@@ -232,10 +250,11 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         print("."*118 + "\n\n")
         print("Nouvel épisode ...\n")
 
-        # #data =  str(self.step_total) + " " +\
-                # #str(str(self.t) + " " +\
-                # #str(self.my_reward_total) + " " +\
-                # #str(theures) + " "
+        ligne = str(self.step_total) + " " +\
+                str(str(self.t) + " " +\
+                str(self.my_reward_total) + " " +\
+                str(time()) + "\n"
+        write_text(self.log_file, ligne, "a")
 
         self.state = self.get_self_state()
         x, x_dot, teta, teta_dot = self.state
@@ -252,5 +271,21 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         obs = np.array([x, x_dot, np.cos(teta), np.sin(teta), teta_dot])
         return obs
 
-    def render(self, mode='human', close=False):
+    def render(self):
         pass
+
+
+def write_text(fichier, ligne, mode):
+    """Mode de ligne au fichier"""
+    with open(fichier, mode) as fd:
+        fd.write(data)
+    fd.close()
+
+def read_file(file_name):
+    try:
+        with open(file_name) as f:
+            data = f.read()
+        f.close()
+    except:
+        data = None
+        print("Fichier inexistant ou impossible à lire:", file_name)

@@ -18,7 +18,7 @@ def train():
 
     env = make_vec_env('CartPoleSwingUpContinuous-v0', n_envs=1)
     model = PPO2(MlpPolicy, env, verbose=0)
-    n = 6000000
+    n = 4000000
     model.learn(total_timesteps=n)
     model.save("./weights/PPO2_Swing_" + str(n))
 
@@ -31,13 +31,17 @@ if __name__ == '__main__':
 
 
 """
-lancé le 04/02/2021 sur tour sans cuda
+lancé le 05/02/2021 avec stop sur vitesse pendule trop forte en haut
+n = 4000000
+
+
+lancé le 04/02/2021 stop trop de tourne en rond et vite
 n = 6000000
 correction bug msg reset x*
 self.x_threshold = 8 # 2.4
 self.t_limit = 2000
 loc=np.array([0.0, 0.0, 3.141592654, 0.0]),
-scale=np.array([0.1, 0.1, 1.0, 0.1])
+scale=np.array([0.1, 0.1, 2.0, 0.1])
 PLAGE = self.x_threshold*2/4
 koeff = 1.8
 angle = 0.3 # radian= 12 deg

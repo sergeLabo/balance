@@ -101,12 +101,16 @@ def on_reset(*args):
              round(gl.reset[3], 2)]
     print("Reset ...", gl.reset_number, ":", state)
 
+def on_info(*args):
+    gl.info_text = arg[0]
+
 def osc_server_init():
     gl.server = OSCThreadServer()
     gl.server.listen('localhost', port=3001, default=True)
     # Les callbacks du serveur
     gl.server.bind(b'/action', on_action)
     gl.server.bind(b'/reset', on_reset)
+    gl.server.bind(b'/info', on_info)
 
 def main_good():
 
@@ -124,6 +128,9 @@ def main_good():
     gl.pendulum = gl.all_obj["pendulum"]
     gl.cube = gl.all_obj["Cube"]
     gl.camera = gl.all_obj["Camera"]
+    gl.info = gl.all_obj["Info"]
+    gl.info_text = ""
+    gl.phase = gl.all_obj["Phase"]
 
     xyz = gl.pendulum.worldOrientation.to_euler()
     xyz[1] = 3.141592654
