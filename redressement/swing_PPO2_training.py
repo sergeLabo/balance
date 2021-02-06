@@ -18,7 +18,7 @@ def train():
 
     env = make_vec_env('CartPoleSwingUpContinuous-v0', n_envs=1)
     model = PPO2(MlpPolicy, env, verbose=0)
-    n = 4000000
+    n = 6000000
     model.learn(total_timesteps=n)
     model.save("./weights/PPO2_Swing_" + str(n))
 
@@ -31,8 +31,20 @@ if __name__ == '__main__':
 
 
 """
+
+
+
+
 lancé le 05/02/2021 avec stop sur vitesse pendule trop forte en haut
 n = 4000000
+    Cycle n°: 5255
+    Steps du cycle = 1866
+    Steps totaux = 3999676
+    Récompense du cycle = 521
+    Efficacité du cycle = 27
+    Récompense totale = 978011
+    Efficacité globale = 0.24
+    Temps écoulé = 22.96
 
 
 lancé le 04/02/2021 stop trop de tourne en rond et vite

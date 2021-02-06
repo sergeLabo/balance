@@ -1,4 +1,5 @@
 
+from time import time
 import numpy as np
 from random import randint
 from bge import logic as gl
@@ -102,7 +103,11 @@ def on_reset(*args):
     print("Reset ...", gl.reset_number, ":", state)
 
 def on_info(*args):
-    gl.info_text = arg[0]
+    if not gl.reset:
+        gl.reset_text = args[0].decode('utf-8')
+    gl.reward_text = args[1]
+    gl.steps_text = args[2]
+    gl.steps_total_text = args[3]
 
 def osc_server_init():
     gl.server = OSCThreadServer()
@@ -115,6 +120,8 @@ def osc_server_init():
 def main_good():
 
     gl.setLogicTicRate(120)
+    # Pour calcul freq
+    gl.top = time()
     gl.frame = 0
     # Horizontal cam
     gl.rc_h = RealCam(0.02, 1)
@@ -128,9 +135,21 @@ def main_good():
     gl.pendulum = gl.all_obj["pendulum"]
     gl.cube = gl.all_obj["Cube"]
     gl.camera = gl.all_obj["Camera"]
-    gl.info = gl.all_obj["Info"]
-    gl.info_text = ""
-    gl.phase = gl.all_obj["Phase"]
+
+    gl.fps = gl.all_obj["Fps"]
+
+    gl.reward = gl.all_obj["Reward"]
+    gl.reward.resolution = 32
+    gl.reset_obj = gl.all_obj["Reset"]
+    gl.reset_obj.resolution = 32
+    gl.steps = gl.all_obj["Steps"]
+    gl.steps.resolution = 32
+    gl.steps_total = gl.all_obj["Steps Total"]
+    gl.steps_total.resolution = 32
+    gl.reset_text = ""
+    gl.reward_text = 0
+    gl.steps_text = 0
+    gl.steps_total_text = 0
 
     xyz = gl.pendulum.worldOrientation.to_euler()
     xyz[1] = 3.141592654

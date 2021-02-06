@@ -1,4 +1,5 @@
 
+from time import time
 from bge import logic as gl
 from once import osc_server_init
 import random
@@ -6,8 +7,31 @@ import math
 
 
 def main():
+
     # Pour tout le jeu
     gl.frame += 1
+
+    if gl.steps_text != 0:
+        moy = round(gl.reward_text/gl.steps_total_text, 2)
+    else:
+        moy = 0
+    gl.reward["Text"] = "Récompense:" + "\n" +\
+                        "    Totale  = " + str(gl.reward_text) + "\n" +\
+                        "    Moyenne = " + str(moy)
+    gl.steps["Text"] = "Steps = " + str(gl.steps_text)
+    gl.steps_total["Text"] = "Steps total = " + str(gl.steps_total_text)
+    if gl.reset_text:
+        gl.reset_obj["Text"] = "Reset: " + str(gl.reset_text)
+    else:
+        gl.reset_obj["Text"] = ""
+
+    # Freq
+    if gl.frame % 120 == 0:
+        t = time()
+        fps = 120/(t - gl.top)
+        gl.top = t
+        gl.fps["Text"] = "FPS = " + str(round(fps, 1))
+
     set_camera_orientation()
 
     # Demande de reset au serveur pour le cas où
@@ -50,9 +74,6 @@ def reset():
     enableRigidBody()
     disableRigidBody()
     """
-    gl.phase["Text"] = "Reset ...."
-    gl.info["Text"] = gl.info_text
-
     gl.num_reset += 1
     x, x_dot, teta, teta_dot = gl.reset
 
@@ -83,8 +104,7 @@ def reset():
         gl.num_reset = 0
         gl.reset = 0
         gl.first = 1
-        gl.phase["Text"] = ""
-        gl.info["Text"] = ""
+        gl.reset_text = ""
 
 def action():
     """Modification de la vitesse du cube"""
