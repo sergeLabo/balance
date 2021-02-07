@@ -5,7 +5,7 @@
 
 # divers non suivi
 old/
-
+log/
 
 # Python test
 *_old.py

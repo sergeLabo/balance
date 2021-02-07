@@ -215,7 +215,7 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         # koeff entre 1 et 2
         # si 1 --> reward sur [0, pi]
         # si 2 --> reward sur [0, pi/2]
-        koeff = 1.8
+        koeff = 1.2
         if -np.pi/koeff < teta < np.pi/koeff:
             reward_balancier = 0.5*(np.cos(teta*koeff) + 1)
         else:
@@ -224,8 +224,8 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         # Récompense si vitesse basse en haut
         self.VMAX = max(self.VMAX, teta_dot)
         RV = 1
-        angle = 0.3 # radian= 12 deg
-        penalty = 0.7
+        angle = 0.1 # radian= 12 deg
+        penalty = 0.8
         if -angle < teta < angle:
             a = - (angle / self.VMAX)
             b = 1
@@ -288,7 +288,6 @@ class CartPoleSwingUpContinuousEnv(gym.Env):
         self.client.send_message(b'/reset', msg)
 
         print("."*118 + "\n\n")
-        print("Nouvel épisode ...\n")
         print("Reset ...", msg)
 
         obs = np.array([x, x_dot, np.cos(teta), np.sin(teta), teta_dot])

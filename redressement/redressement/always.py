@@ -107,16 +107,19 @@ def reset():
         gl.reset_text = ""
 
 def action():
-    """Modification de la vitesse du cube"""
+    """Modification de la vitesse du cube
+    Envoi de la réponse la frame suivant la réception
+    """
 
     vitesse = gl.action * 0.05
     gl.cube.worldLinearVelocity[0] -= vitesse
-
+    # #print("avant", gl.action, gl.action_new)
     if gl.action_new >= 2:
         gl.send = 1
         gl.action_new = 0
     gl.action = 0
     gl.action_new += 1
+    # #print("après", gl.action, gl.action_new)
 
 def send_result():
     """Envoi de: np.array(self.state), reward, done"""

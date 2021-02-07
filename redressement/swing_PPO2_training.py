@@ -18,7 +18,7 @@ def train():
 
     env = make_vec_env('CartPoleSwingUpContinuous-v0', n_envs=1)
     model = PPO2(MlpPolicy, env, verbose=0)
-    n = 6000000
+    n = 2000000
     model.learn(total_timesteps=n)
     model.save("./weights/PPO2_Swing_" + str(n))
 
@@ -31,9 +31,20 @@ if __name__ == '__main__':
 
 
 """
-
-
-
+lancé le 05/02/2021 sur moi avec
+n = 2 000 000
+Reward
+    koeff = 1.2
+    angle = 0.1
+    penalty = 0.8
+Scene
+    physics steps
+    max = 20
+    substeps = 2
+    logic step = 10
+Steps totaux = 1998952
+    Efficacité globale = 0.35
+    Temps écoulé = 11.64
 
 lancé le 05/02/2021 avec stop sur vitesse pendule trop forte en haut
 n = 4000000
