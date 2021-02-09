@@ -50,5 +50,5 @@ if __name__ == '__main__':
     # #n = 4000  # 9 000 000
     # #train_avec_reprise(fichier_origin, n)
 
-    fichier_origin = "./weights/SR-20210207-182046-0.zip"
+    fichier_origin = "./weights/SR-20210207-085340-1.zip"
     rendu(fichier_origin)
