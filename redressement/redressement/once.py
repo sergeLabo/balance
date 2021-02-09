@@ -15,9 +15,9 @@ class RealCam:
         longueur int de 1 à 10
         """
         self.amplitude = amplitude
-        self.haut = self.amplitude*randint(1, 5)
+        self.haut = self.amplitude*randint(0, 5)
         self.duree = duree
-        self.period = self.duree*randint(50, 500)
+        self.period = self.duree*randint(300, 900)
         self.reset()
         # Valeur courante
         self.x = 0
@@ -117,18 +117,19 @@ def osc_server_init():
     gl.server.bind(b'/reset', on_reset)
     gl.server.bind(b'/info', on_info)
 
-def main_good():
+def main():
+    print("Lancement de once.py ...")
 
     gl.setLogicTicRate(120)
     # Pour calcul freq
     gl.top = time()
     gl.frame = 0
     # Horizontal cam
-    gl.rc_h = RealCam(0.02, 1)
+    gl.rc_h = RealCam(0.02, 5)
     # Vertical cam
-    gl.rc_v = RealCam(0.02, 1)
+    gl.rc_v = RealCam(0.02, 5)
     # Profondeur Cam
-    gl.rc_p = RealCam(1, 5)
+    gl.rc_p = RealCam(1, 10)
 
     gl.all_obj = get_all_objects()
     gl.empty = gl.all_obj["Empty"]
@@ -170,10 +171,5 @@ def main_good():
 
     # Demande de reset
     gl.client.send_message(b'/reset', [1])
-
-def main():
-    print("Lancement de once.py ...")
-
-    main_good()
 
     print("Fin de once.py")

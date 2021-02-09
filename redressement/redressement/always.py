@@ -65,7 +65,7 @@ def set_camera_orientation():
     gl.camera.worldOrientation = xyz.to_matrix()
 
     # Profondeur
-    gl.camera.worldPosition[1] = gl.rc_p.y - 13
+    gl.camera.worldPosition[1] = gl.rc_p.y - 18
 
 def reset():
     """

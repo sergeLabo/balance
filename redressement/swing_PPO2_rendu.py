@@ -15,7 +15,7 @@ def rendu():
 
     env = make_vec_env('CartPoleSwingUpContinuous-v0', n_envs=1)
 
-    model = PPO2.load("./weights/PPO2_Swing_2000000.zip")
+    model = PPO2.load("./weights/SR-20210207-104006-11.zip", env=env, verbose=0)
 
     obs = env.reset()
     for _ in range(1000000):

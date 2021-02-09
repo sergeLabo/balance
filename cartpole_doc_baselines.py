@@ -1,7 +1,10 @@
 
-import sys
-sys.path.append('my_gym')
-import gym
+try:
+    import sys
+    sys.path.append('my_gym')
+    import gym
+except:
+    import gym
 
 import numpy as np
 

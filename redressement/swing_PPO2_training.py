@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
 
 """
-lancé le 05/02/2021 sur moi avec
+lancé le 06/02/2021 sur moi avec
 n = 2 000 000
 Reward
     koeff = 1.2
@@ -46,6 +46,8 @@ Steps totaux = 1998952
     Efficacité globale = 0.35
     Temps écoulé = 11.64
 
+
+
 lancé le 05/02/2021 avec stop sur vitesse pendule trop forte en haut
 n = 4000000
     Cycle n°: 5255
@@ -56,7 +58,6 @@ n = 4000000
     Récompense totale = 978011
     Efficacité globale = 0.24
     Temps écoulé = 22.96
-
 
 lancé le 04/02/2021 stop trop de tourne en rond et vite
 n = 6000000
