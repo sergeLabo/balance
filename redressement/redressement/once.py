@@ -15,9 +15,7 @@ class RealCam:
         longueur int de 1 à 10
         """
         self.amplitude = amplitude
-        self.haut = self.amplitude*randint(0, 5)
         self.duree = duree
-        self.period = self.duree*randint(300, 900)
         self.reset()
         # Valeur courante
         self.x = 0
@@ -31,9 +29,9 @@ class RealCam:
 
     def reset(self):
         # Frame de début de la sinusoïde
-        self.haut = int(self.amplitude*randint(1, 5))
+        self.haut = self.amplitude*randint(1, 5)
         self.initial_frame = gl.frame
-        self.period = int(self.duree*randint(100, 300))
+        self.period = self.duree*randint(60, 300)
         # Valeur courante
         self.x = 0
 
@@ -124,12 +122,16 @@ def main():
     # Pour calcul freq
     gl.top = time()
     gl.frame = 0
-    # Horizontal cam
-    gl.rc_h = RealCam(0.02, 5)
+    # Horizontal cam amplitude durée
+    gl.rc_ho = RealCam(0.01, 10)
     # Vertical cam
-    gl.rc_v = RealCam(0.02, 5)
+    gl.rc_v = RealCam(0.01, 10)
     # Profondeur Cam
     gl.rc_p = RealCam(1, 10)
+    # Largeur
+    gl.rc_l = RealCam(0.1, 20)
+    # Hauteur
+    gl.rc_ha = RealCam(0.1, 20)
 
     gl.all_obj = get_all_objects()
     gl.empty = gl.all_obj["Empty"]
