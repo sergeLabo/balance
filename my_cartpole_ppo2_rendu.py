@@ -14,19 +14,15 @@ from stable_baselines import PPO2
 
 
 def rendu():
+    env = make_vec_env('My-CartPole-v0', n_envs=1)
 
-    env_id = "My-CartPole-v0"
-    num_cpu = 1
-    env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
-
-    model = PPO2.load("./weights/ppo2_cartpole250000")
+    model = PPO2.load("./weights/ppo2_cartpole250000.zip")
 
     obs = env.reset()
-    for _ in range(100000):
-        sleep(0.02)
+    while True:
+        sleep(0.009)
         action, _states = model.predict(obs)
         obs, rewards, dones, info = env.step(action)
-        print(obs, rewards, dones, info)
 
 
 
