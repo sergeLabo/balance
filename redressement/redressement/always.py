@@ -53,23 +53,23 @@ def main():
 
 def set_camera_orientation():
     """alpha = arcsin(x/y)"""
-    gl.rc_v.update()
-    gl.rc_ho.update()
-    gl.rc_p.update()
-    gl.rc_ha.update()
-    gl.rc_l.update()
+    gl.rc_r_v.update()
+    gl.rc_r_ho.update()
+    gl.rc_p_p.update()
+    gl.rc_p_ha.update()
+    gl.rc_p_l.update()
 
     tg = gl.cube.worldPosition[0]/gl.camera.worldPosition[1]
     alpha = math.atan(tg)
     xyz = gl.camera.worldOrientation.to_euler()
-    xyz[2] = alpha + gl.rc_ho.y
-    xyz[0] = 3.14159/2 + gl.rc_v.y
+    xyz[2] = alpha + gl.rc_r_ho.y
+    xyz[0] = 3.14159/2 + gl.rc_r_v.y
     gl.camera.worldOrientation = xyz.to_matrix()
 
     # Position
-    gl.camera.worldPosition[1] = gl.rc_p.y - 15
-    gl.camera.worldPosition[2] = gl.rc_ha.y
-    gl.camera.worldPosition[0] = gl.rc_l.y
+    gl.camera.worldPosition[1] = gl.rc_p_p.y - 12
+    gl.camera.worldPosition[2] = gl.rc_p_ha.y
+    gl.camera.worldPosition[0] = gl.rc_p_l.y
 
 def reset():
 

@@ -122,16 +122,18 @@ def main():
     # Pour calcul freq
     gl.top = time()
     gl.frame = 0
-    # Horizontal cam amplitude durée
-    gl.rc_ho = RealCam(0.01, 10)
-    # Vertical cam
-    gl.rc_v = RealCam(0.01, 10)
-    # Profondeur Cam
-    gl.rc_p = RealCam(1, 10)
+
+    # Rot Horizontal amplitude durée
+    gl.rc_r_ho = RealCam(0.01, 10)
+    # Rot Vertical
+    gl.rc_r_v = RealCam(0.01, 10)
+
+    # Profondeur
+    gl.rc_p_p = RealCam(2, 10)
     # Largeur
-    gl.rc_l = RealCam(0.1, 20)
+    gl.rc_p_l = RealCam(0.1, 20)
     # Hauteur
-    gl.rc_ha = RealCam(0.1, 20)
+    gl.rc_p_ha = RealCam(0.1, 20)
 
     gl.all_obj = get_all_objects()
     gl.empty = gl.all_obj["Empty"]

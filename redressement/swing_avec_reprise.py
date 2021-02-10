@@ -32,16 +32,17 @@ def train_avec_reprise(fichier_origin, n):
 
     print("Temps d'apprentissage en heure =", round((time()-t0)/3600, 3))
 
-def rendu(fichier_origin):
+def rendu(fichier):
 
     env = make_vec_env('CartPoleSwingUpContinuous-v0', n_envs=1)
-    model = PPO2.load(fichier_origin, cloudpickle=False)
+    model = PPO2.load(fichier, cloudpickle=False)
 
     obs = env.reset()
     for _ in range(1000000):
         sleep(0.009)
         action, _states = model.predict(obs)
         obs, rewards, dones, info = env.step(action)
+
 
 if __name__ == '__main__':
 
@@ -50,5 +51,6 @@ if __name__ == '__main__':
     # #n = 4000  # 9 000 000
     # #train_avec_reprise(fichier_origin, n)
 
-    fichier_origin = "./weights/SR-20210207-085340-1.zip"
-    rendu(fichier_origin)
+    # fichier = "./weights/SR-20210208-104017-99.zip"  # Xubuntu 18.04 et GPU
+    fichier = "./weights/SR-20210207-085340-1.zip"
+    rendu(fichier)
