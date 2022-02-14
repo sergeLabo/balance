@@ -108,6 +108,7 @@ def reset():
 def action():
     """Modification de la vitesse du cube
     Envoi de la réponse la frame suivant la réception
+    1*5000*0.05/10000=0.025m/s
     """
 
     vitesse = gl.action * 0.05
